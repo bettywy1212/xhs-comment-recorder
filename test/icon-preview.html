@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>图标预览</title>
+<!-- 预览图标在各尺寸下的效果，并把 icons/icon.svg 转成 Chrome 需要的 PNG（window.__png 里是 base64） -->
+<style>
+  body { font: 14px -apple-system, sans-serif; padding: 16px; }
+  .row { display: flex; gap: 24px; align-items: end; padding: 16px; }
+  .dark { background: #202124; color: #eee; }
+  figure { margin: 0; text-align: center; }
+</style>
+<div class="row" id="light"></div>
+<div class="row dark" id="dark"></div>
+<script>
+  const SIZES = [128, 48, 32, 16];
+  window.__png = {};
+  const img = new Image();
+  img.onload = () => {
+    for (const size of SIZES) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      c.getContext('2d').drawImage(img, 0, 0, size, size);
+      window.__png[size] = c.toDataURL('image/png').split(',')[1];
+      for (const id of ['light', 'dark']) {
+        const f = document.createElement('figure');
+        const i = new Image();
+        i.src = c.toDataURL('image/png');
+        f.append(i, Object.assign(document.createElement('figcaption'), { textContent: size + 'px' }));
+        document.getElementById(id).append(f);
+      }
+    }
+    document.title = '图标预览 ✓';
+  };
+  img.src = '../icons/icon.svg';
+</script>

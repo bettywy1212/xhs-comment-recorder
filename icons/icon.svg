@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- 小红帽 · 小红书评论记录器 图标：红色圆角底 + 白色评论气泡 + 戴红兜帽的小女孩 -->
+  <rect width="128" height="128" rx="28" fill="#FF2442"/>
+
+  <!-- 评论气泡 -->
+  <path d="M30 22h68a14 14 0 0 1 14 14v48a14 14 0 0 1-14 14H58l-20 16v-16h-8a14 14 0 0 1-14-14V36a14 14 0 0 1 14-14z" fill="#fff"/>
+
+  <!-- 兜帽 -->
+  <path d="M64 28c-21 0-32 17-32 35 0 11 3 20 7 26h50c4-6 7-15 7-26 0-18-11-35-32-35z" fill="#FF2442"/>
+  <!-- 兜帽内侧阴影 -->
+  <path d="M64 40c-15 0-23 12-23 25 0 8 2 15 5 20h36c3-5 5-12 5-20 0-13-8-25-23-25z" fill="#C8102E"/>
+
+  <!-- 脸 -->
+  <circle cx="64" cy="66" r="17" fill="#FFE4D4"/>
+  <!-- 刘海 -->
+  <path d="M47 63c2-10 9-15 17-15s15 5 17 15c-5-4-11-5-17-5s-12 1-17 5z" fill="#6B3A2A"/>
+  <!-- 眼睛 -->
+  <circle cx="58" cy="68" r="2.8" fill="#3A1D1D"/>
+  <circle cx="70" cy="68" r="2.8" fill="#3A1D1D"/>
+  <!-- 腮红 -->
+  <ellipse cx="53.5" cy="74" rx="3.2" ry="2" fill="#FF8A9A"/>
+  <ellipse cx="74.5" cy="74" rx="3.2" ry="2" fill="#FF8A9A"/>
+  <!-- 微笑 -->
+  <path d="M60.5 75.5q3.5 3 7 0" stroke="#3A1D1D" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+  <!-- 领口蝴蝶结 -->
+  <path d="M64 86l-7-4v8zM64 86l7-4v8z" fill="#fff"/>
+  <circle cx="64" cy="86" r="2.2" fill="#fff"/>
+</svg>

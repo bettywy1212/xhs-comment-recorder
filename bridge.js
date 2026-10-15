@@ -10,7 +10,7 @@
     const records = P.parseResponse(msg.url, msg.payload);
     if (!records.length) return;
     // 排队写入，避免连续两次返回互相覆盖
-    queue = queue.then(() => save(records)).catch((err) => console.warn('[小红书评论记录器]', err));
+    queue = queue.then(() => save(records)).catch((err) => console.warn('[小红帽]', err));
   });
 
   function pageTitle(noteId) {

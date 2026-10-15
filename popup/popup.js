@@ -1,8 +1,11 @@
 const P = self.XhsParse;
 const $ = (id) => document.getElementById(id);
 
+let downloads = {};
+
 async function loadNotes() {
-  const all = await chrome.storage.local.get(null);
+  const [all, session] = await Promise.all([chrome.storage.local.get(null), chrome.storage.session.get(null)]);
+  downloads = session;
   return Object.keys(all)
     .filter((k) => k.startsWith('note:'))
     .map((k) => all[k])
@@ -43,13 +46,28 @@ function noteCard(note, el) {
   const exportBtn = document.createElement('button');
   exportBtn.textContent = '导出 CSV';
   exportBtn.onclick = () => download([note], note.title);
+  const imgCount = P.imageTasks(note).length;
+  const dl = downloads['dl:' + note.noteId];
+  const imgBtn = document.createElement('button');
+  imgBtn.className = 'secondary';
+  if (dl && !dl.finished) {
+    imgBtn.textContent = `下载中 ${dl.done + dl.failed}/${dl.total}`;
+    imgBtn.disabled = true;
+  } else {
+    imgBtn.textContent = `下载图片（${imgCount}）`;
+    imgBtn.disabled = imgCount === 0;
+    imgBtn.onclick = () => chrome.runtime.sendMessage({ type: 'downloadImages', noteId: note.noteId });
+  }
+  if (dl && dl.finished) {
+    meta.textContent += ` · 图片已下载 ${dl.done} 张` + (dl.failed ? `，失败 ${dl.failed} 张` : '');
+  }
   const delBtn = document.createElement('button');
   delBtn.className = 'secondary danger';
   delBtn.textContent = '删除';
   delBtn.onclick = async () => {
     if (confirm(`删除“${note.title || note.noteId}”的记录？`)) await chrome.storage.local.remove('note:' + note.noteId);
   };
-  buttons.append(exportBtn, delBtn);
+  buttons.append(exportBtn, imgBtn, delBtn);
   el.append(title, meta, buttons);
   return el;
 }

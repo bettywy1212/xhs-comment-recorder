@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>弹窗预览</title>
+<!-- 用假的 chrome API 和示例数据预览弹窗样式，不需要安装扩展 -->
+<link rel="stylesheet" href="../popup/popup.css">
+<body>
+<script>
+  const sample = (title, id, n, pics) => {
+    const comments = {};
+    for (let i = 0; i < n; i++) comments['c' + i] = { id: 'c' + i, noteId: id, parentId: i % 3 ? 'c0' : '', user: '用户' + i, content: '内容', likes: '1', timestamp: i, ip: '', images: i < pics ? ['https://a.com/x.jpg'] : [] };
+    return { noteId: id, title, updatedAt: n, comments };
+  };
+  const local = {
+    'note:6700000000000000000000aa': sample('柯桥真正的美食家现身吧！', '6700000000000000000000aa', 126, 12),
+    'note:6700000000000000000000bb': sample('一篇没有图片评论的笔记', '6700000000000000000000bb', 20, 0),
+  };
+  const session = { 'dl:6700000000000000000000bb': { total: 0, done: 0, failed: 0, finished: true } };
+  if (location.hash === '#downloading') session['dl:6700000000000000000000aa'] = { total: 12, done: 5, failed: 0, finished: false };
+  if (location.hash === '#done') session['dl:6700000000000000000000aa'] = { total: 12, done: 11, failed: 1, finished: true };
+  window.chrome = {
+    storage: { local: { get: async () => local, remove: async () => {} }, session: { get: async () => session }, onChanged: { addListener() {} } },
+    tabs: { query: async () => [{ url: 'https://www.xiaohongshu.com/explore/6700000000000000000000aa' }] },
+    runtime: { sendMessage: async (m) => console.log('sendMessage', m) },
+  };
+</script>
+<div id="root"></div>
+<script>
+  fetch('../popup/popup.html').then((r) => r.text()).then((html) => {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    document.body.insertAdjacentHTML('afterbegin', doc.body.innerHTML.replace(/<script[\s\S]*?<\/script>/g, ''));
+    for (const src of ['../lib/parse.js', '../popup/popup.js']) {
+      const s = document.createElement('script'); s.src = src; s.async = false; document.body.append(s);
+    }
+  });
+</script>
+</body>

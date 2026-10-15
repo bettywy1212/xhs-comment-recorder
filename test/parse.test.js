@@ -47,4 +47,12 @@ const multi = P.toCSV([{ noteId: NOTE, title: 'T1', comments }, { noteId: 'n2', 
 assert(multi.startsWith('﻿"笔记标题","笔记ID"'));
 
 assert.deepStrictEqual(P.parseResponse(pageUrl, { code: -1, data: null }), []);
+const tasks = P.imageTasks({ noteId: NOTE, title: '柯桥 美食/推荐', comments });
+assert.deepStrictEqual(tasks.map((t) => t.path), [
+  '小红书评论图片/柯桥_美食_推荐_0000aa/001_评论_图图_c2_1.jpg',
+  '小红书评论图片/柯桥_美食_推荐_0000aa/001_评论_图图_c2_2.jpg',
+]);
+const webp = P.imageTasks({ noteId: NOTE, title: '', comments: { x: { ...comments.c2, images: ['https://sns-webpic-qc.xhscdn.com/abc!nc_n_webp_mw_1', 'https://a.com/p.png?x=1'] } } });
+assert.deepStrictEqual(webp.map((t) => t.path.split('.').pop()), ['webp', 'png']);
+assert(csv.includes('"001_评论_图图_c2_1.jpg\n001_评论_图图_c2_2.jpg"') || P.toCSV([{ noteId: NOTE, title: 't', comments }]).includes('"001_评论_图图_c2_1.jpg\n001_评论_图图_c2_2.jpg"'), 'CSV 图片文件名列');
 console.log('全部通过 ✓');

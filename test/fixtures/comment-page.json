@@ -3,5 +3,5 @@
    {"id":"r1","note_id":"6700000000000000000000aa","content":"同意","create_time":1760000100000,"like_count":"2","ip_location":"上海","user_info":{"user_id":"u2","nickname":"小A"}},
    {"id":"r2","note_id":"6700000000000000000000aa","content":"=1+1 在哪里","create_time":1760000200000,"like_count":"0","ip_location":"浙江","user_info":{"user_id":"u3","nickname":"小B"},"target_comment":{"id":"r1","user_info":{"user_id":"u2","nickname":"小A"}}}
  ]},
- {"id":"c2","note_id":"6700000000000000000000aa","content":"","pictures":[{"url":"x"}],"create_time":1759990000000,"like_count":"5","ip_location":"江苏","user_info":{"user_id":"u4","nickname":"图图"},"sub_comments":[]}
+ {"id":"c2","note_id":"6700000000000000000000aa","content":"","pictures":[{"height":1280,"width":960,"url_pre":"http://sns-webpic-qc.xhscdn.com/pre/a.jpg","url_default":"http://sns-webpic-qc.xhscdn.com/dft/a.jpg"},{"info_list":[{"image_scene":"WB_PRV","url":"https://ci.xiaohongshu.com/prv/b.jpg"},{"image_scene":"WB_DFT","url":"https://ci.xiaohongshu.com/dft/b.jpg"}]}],"create_time":1759990000000,"like_count":"5","ip_location":"江苏","user_info":{"user_id":"u4","nickname":"图图"},"sub_comments":[]}
 ]}}

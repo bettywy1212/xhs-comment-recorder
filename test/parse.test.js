@@ -15,7 +15,10 @@ const a = P.parseResponse(pageUrl, page);
 assert.strictEqual(a.length, 4);
 assert.deepStrictEqual(a.map((r) => [r.id, r.parentId]), [['c1', ''], ['r1', 'c1'], ['r2', 'c1'], ['c2', '']]);
 assert.strictEqual(a[2].replyTo, '小A');
-assert.strictEqual(a[3].content, '[图片×1]');
+assert.strictEqual(a[3].content, '[图片×2]');
+assert.deepStrictEqual(a[3].images, ['https://sns-webpic-qc.xhscdn.com/dft/a.jpg', 'https://ci.xiaohongshu.com/dft/b.jpg']);
+assert.deepStrictEqual(a[0].images, []);
+assert.deepStrictEqual(P.mergeRecord(a[3], { ...a[3], images: [] }).images.length, 2, '空图片列表不覆盖已有图片');
 
 const b = P.parseResponse(subUrl, sub);
 assert.strictEqual(b.length, 2);
@@ -31,6 +34,7 @@ const order = P.orderRecords(Object.values(comments)).map((r) => r.id);
 assert.deepStrictEqual(order, ['c2', 'c1', 'r1', 'r2', 'r3']);
 
 const csv = P.toCSV([{ noteId: NOTE, title: '测试笔记', comments }]);
+assert(csv.includes('"https://sns-webpic-qc.xhscdn.com/dft/a.jpg\nhttps://ci.xiaohongshu.com/dft/b.jpg"'), '图片链接列');
 assert(csv.startsWith('﻿"楼层"'));
 assert(csv.includes('"\'=1+1 在哪里"'), '公式注入防护');
 assert(csv.includes('"这家店真的好吃，""强烈""推荐"'), '引号转义');

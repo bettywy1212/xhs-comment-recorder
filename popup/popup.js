@@ -44,11 +44,19 @@ async function exportXlsx(note) {
   update('正在准备…');
   let msg;
   try {
-    const { bytes, total, failed } = await self.XhsExport.noteToXlsx(note, (done, all) => {
+    const { bytes, total, failed, failedFloors } = await self.XhsExport.noteToXlsx(note, (done, all) => {
       if (all) update(`正在加载图片 ${done}/${all}，请不要关闭弹窗…`);
     });
     saveFile(bytes, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', note.title, 'xlsx');
-    msg = failed ? `已导出，${failed}/${total} 张图片加载失败` : `已导出${total ? `，含 ${total} 张图片` : ''}`;
+    if (failed) {
+      const floors = [...new Set(failedFloors)].filter((f) => f !== '').slice(0, 5).join('、');
+      msg =
+        `已导出。${total} 张图片中有 ${failed} 张重试后仍未能加载` +
+        (floors ? `（第 ${floors} 楼）` : '') +
+        `，已在“图片链接”列标注“未能加载”，可以手动打开，或者稍后再导出一次。`;
+    } else {
+      msg = `已导出${total ? `，${total} 张图片全部加载成功` : ''}`;
+    }
   } catch (err) {
     msg = '导出失败：' + (err && err.message ? err.message : err);
     console.error(err);
@@ -67,22 +75,27 @@ function noteCard(note, el) {
   title.title = note.title || '';
   const meta = document.createElement('div');
   meta.className = 'meta';
-  meta.textContent = `评论 ${c.top} 条 · 回复 ${c.reply} 条 · 共 ${c.total} 条`;
+  const imgCount = Object.values(note.comments || {}).reduce((n, r) => n + (r.images || []).length, 0);
+  meta.textContent = `评论 ${c.top} 条 · 回复 ${c.reply} 条 · 共 ${c.total} 条` + (imgCount ? ` · 图片 ${imgCount} 张` : '');
   const buttons = document.createElement('div');
   buttons.className = 'buttons';
   const exportBtn = document.createElement('button');
   exportBtn.textContent = '导出 CSV';
   exportBtn.onclick = () => download([note], note.title);
-  const imgCount = Object.values(note.comments || {}).reduce((n, r) => n + (r.images || []).length, 0);
   const busy = exporting.get(note.noteId);
   const xlsxBtn = document.createElement('button');
-  xlsxBtn.textContent = busy ? '导出中…' : imgCount ? `导出 Excel（含 ${imgCount} 张图）` : '导出 Excel';
+  xlsxBtn.textContent = busy ? '导出中…' : '导出 Excel';
   xlsxBtn.disabled = !!busy;
   xlsxBtn.onclick = () => exportXlsx(note);
   exportBtn.className = 'secondary';
   const status = document.createElement('div');
   status.className = 'meta status';
   status.textContent = busy || lastMessages.get(note.noteId) || '';
+  // 旧版本采集的记录没有图片信息，提示重新采集
+  const outdated = Object.values(note.comments || {}).some((r) => !('images' in r));
+  const outdatedHint = document.createElement('div');
+  outdatedHint.className = 'meta warn';
+  outdatedHint.textContent = '这条记录来自旧版本插件，缺少图片信息。请删除后刷新笔记页面，重新滑一遍评论区。';
   const delBtn = document.createElement('button');
   delBtn.className = 'secondary danger';
   delBtn.textContent = '删除';
@@ -90,7 +103,9 @@ function noteCard(note, el) {
     if (confirm(`删除“${note.title || note.noteId}”的记录？`)) await chrome.storage.local.remove('note:' + note.noteId);
   };
   buttons.append(xlsxBtn, exportBtn, delBtn);
-  el.append(title, meta, buttons);
+  el.append(title, meta);
+  if (outdated) el.append(outdatedHint);
+  el.append(buttons);
   if (status.textContent) el.append(status);
   return el;
 }

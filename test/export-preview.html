@@ -4,6 +4,18 @@
 <!-- 用本地图片跑一遍“加载图片 → 缩略图 → 生成 xlsx”，点按钮可下载生成的文件 -->
 <pre id="out">运行中…</pre>
 <button id="save" hidden>下载生成的 xlsx</button>
+<script>
+  // 模拟网络不稳定：带 ?flaky 的图片第一次请求失败，重试后成功
+  const realFetch = window.fetch;
+  const flakyHits = {};
+  window.fetch = (url, opts) => {
+    if (String(url).includes('flaky') && !flakyHits[url]) {
+      flakyHits[url] = 1;
+      return Promise.reject(new TypeError('Failed to fetch'));
+    }
+    return realFetch(url, opts);
+  };
+</script>
 <script src="../lib/parse.js"></script>
 <script src="../lib/xlsx.js"></script>
 <script src="../lib/export-xlsx.js"></script>
@@ -17,16 +29,18 @@
       b: rec('b', '', '图图', '[图片×2]', ['fixtures/img/wide.jpg', 'fixtures/img/square.png'], 2),
       c: rec('c', 'b', '小A', '[图片×1]', ['fixtures/img/square.png'], 3),
       d: rec('d', '', '坏图', '[图片×1]', ['fixtures/img/missing.jpg'], 4),
+      e: rec('e', '', '网不好', '[图片×2]', ['fixtures/img/wide.jpg?flaky', 'fixtures/img/missing2.jpg'], 5),
     },
   };
   const progress = [];
-  XhsExport.noteToXlsx(note, (d, t) => progress.push(`${d}/${t}`)).then(({ bytes, total, failed }) => {
+  XhsExport.noteToXlsx(note, (d, t) => progress.push(`${d}/${t}`)).then(({ bytes, total, failed, failedFloors }) => {
     const text = new TextDecoder().decode(bytes);
     const result = {
-      total, failed, progress: progress.join(' '), size: bytes.length,
+      total, failed, failedFloors, flakyRetried: flakyHits['fixtures/img/wide.jpg?flaky'] === 1, progress: progress.join(' '), size: bytes.length,
       mediaFiles: (text.match(/xl\/media\/image\d+\.jpeg/g) || []).filter((v, i, a) => a.indexOf(v) === i),
       header: (text.match(/<row r="1"[^>]*>.*?<\/row>/) || [''])[0].match(/<t xml:space="preserve">[^<]*/g).map((s) => s.slice(24)),
-      failNote: text.includes("张图片加载失败"),
+      failedMarks: (text.match(/【未能加载，请手动打开】[^<\n]*/g) || []),
+      allFailedCell: text.includes('1 张图片未能加载'),
     };
     document.getElementById('out').textContent = JSON.stringify(result, null, 1);
     const btn = document.getElementById('save');

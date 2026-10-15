@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "小红书评论记录器",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "你正常浏览小红书笔记时，被动记录页面已加载的评论和楼中楼回复，一键导出 CSV。不发出任何额外请求。",
   "permissions": [
     "storage",

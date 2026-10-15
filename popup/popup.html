@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>小红书评论记录器</h1>
+    <p class="hint">打开笔记后自己往下滑、点“展开更多回复”，加载出来的评论会自动记下。装好扩展后，已打开的页面要先刷新一次。</p>
+  </header>
+
+  <section id="current" hidden>
+    <h2>当前笔记</h2>
+    <div id="current-body"></div>
+  </section>
+
+  <section>
+    <div class="row">
+      <h2>已记录的笔记</h2>
+      <span class="actions">
+        <button id="export-all" class="link">全部导出</button>
+        <button id="clear-all" class="link danger">清空</button>
+      </span>
+    </div>
+    <ul id="notes"></ul>
+    <p id="empty" class="hint" hidden>还没有记录。打开一篇小红书笔记，滑动评论区试试。</p>
+  </section>
+
+  <script src="../lib/parse.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

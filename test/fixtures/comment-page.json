@@ -1,0 +1,7 @@
+{"code":0,"success":true,"data":{"cursor":"c2","has_more":true,"comments":[
+ {"id":"c1","note_id":"6700000000000000000000aa","content":"这家店真的好吃，\"强烈\"推荐","create_time":1760000000000,"like_count":"32","ip_location":"浙江","user_info":{"user_id":"u1","nickname":"momo"},"sub_comment_count":"3","sub_comments":[
+   {"id":"r1","note_id":"6700000000000000000000aa","content":"同意","create_time":1760000100000,"like_count":"2","ip_location":"上海","user_info":{"user_id":"u2","nickname":"小A"}},
+   {"id":"r2","note_id":"6700000000000000000000aa","content":"=1+1 在哪里","create_time":1760000200000,"like_count":"0","ip_location":"浙江","user_info":{"user_id":"u3","nickname":"小B"},"target_comment":{"id":"r1","user_info":{"user_id":"u2","nickname":"小A"}}}
+ ]},
+ {"id":"c2","note_id":"6700000000000000000000aa","content":"","pictures":[{"url":"x"}],"create_time":1759990000000,"like_count":"5","ip_location":"江苏","user_info":{"user_id":"u4","nickname":"图图"},"sub_comments":[]}
+]}}

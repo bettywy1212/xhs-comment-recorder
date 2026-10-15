@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>拦截测试</title>
+<!-- 用法：在项目根目录运行 python3 -m http.server 8765，然后打开 http://localhost:8765/test/intercept.html -->
+<script src="../inject.js"></script>
+<pre id="out">运行中…</pre>
+<script>
+  const got = [];
+  window.addEventListener('message', (e) => {
+    if (e.data && e.data.source === 'xhs-comment-recorder') got.push(e.data);
+  });
+  const fake = (name, sub) => `/test/fixtures/${name}.json?api=/api/sns/web/v2/comment/${sub ? 'sub/' : ''}page`;
+  (async () => {
+    const r = await fetch(fake('comment-page'));
+    const body = await r.json(); // 页面自己读取返回不受影响
+    await new Promise((ok) => {
+      const x = new XMLHttpRequest();
+      x.open('GET', fake('sub-page', true));
+      x.onload = ok;
+      x.send();
+    });
+    await new Promise((ok) => {
+      const x = new XMLHttpRequest();
+      x.responseType = 'json';
+      x.open('GET', fake('comment-page'));
+      x.onload = ok;
+      x.send();
+    });
+    await fetch('/test/fixtures/comment-page.json'); // 不匹配接口，不应被记录
+    await new Promise((ok) => setTimeout(ok, 300));
+    const result = {
+      pageStillReadsBody: body.data.comments.length === 2,
+      captured: got.length,
+      kinds: got.map((m) => (m.url.includes('sub/page') ? 'sub' : 'page') + ':' + m.payload.data.comments.length),
+    };
+    document.getElementById('out').textContent = JSON.stringify(result);
+  })();
+</script>

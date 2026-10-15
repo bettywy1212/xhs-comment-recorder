@@ -25,8 +25,8 @@
     const result = {
       total, failed, progress: progress.join(' '), size: bytes.length,
       mediaFiles: (text.match(/xl\/media\/image\d+\.jpeg/g) || []).filter((v, i, a) => a.indexOf(v) === i),
-      header: (text.match(/<row r="1">.*?<\/row>/) || [''])[0].match(/<t xml:space="preserve">[^<]*/g).map((s) => s.slice(24)),
-      failCellText: text.includes('图片加载失败'),
+      header: (text.match(/<row r="1"[^>]*>.*?<\/row>/) || [''])[0].match(/<t xml:space="preserve">[^<]*/g).map((s) => s.slice(24)),
+      failNote: text.includes("张图片加载失败"),
     };
     document.getElementById('out').textContent = JSON.stringify(result, null, 1);
     const btn = document.getElementById('save');

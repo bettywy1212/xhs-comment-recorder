@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Excel 导出测试</title>
+<!-- 用本地图片跑一遍“加载图片 → 缩略图 → 生成 xlsx”，点按钮可下载生成的文件 -->
+<pre id="out">运行中…</pre>
+<button id="save" hidden>下载生成的 xlsx</button>
+<script src="../lib/parse.js"></script>
+<script src="../lib/xlsx.js"></script>
+<script src="../lib/export-xlsx.js"></script>
+<script>
+  const rec = (id, parentId, user, content, images, t) => ({ id, noteId: 'n', parentId, user, content, likes: '1', timestamp: t, ip: '浙江', images, replyTo: '' });
+  const note = {
+    noteId: '6700000000000000000000aa',
+    title: '测试笔记',
+    comments: {
+      a: rec('a', '', 'momo', '没有图片的评论', [], 1),
+      b: rec('b', '', '图图', '[图片×2]', ['fixtures/img/wide.jpg', 'fixtures/img/square.png'], 2),
+      c: rec('c', 'b', '小A', '[图片×1]', ['fixtures/img/square.png'], 3),
+      d: rec('d', '', '坏图', '[图片×1]', ['fixtures/img/missing.jpg'], 4),
+    },
+  };
+  const progress = [];
+  XhsExport.noteToXlsx(note, (d, t) => progress.push(`${d}/${t}`)).then(({ bytes, total, failed }) => {
+    const text = new TextDecoder().decode(bytes);
+    const result = {
+      total, failed, progress: progress.join(' '), size: bytes.length,
+      mediaFiles: (text.match(/xl\/media\/image\d+\.jpeg/g) || []).filter((v, i, a) => a.indexOf(v) === i),
+      header: (text.match(/<row r="1">.*?<\/row>/) || [''])[0].match(/<t xml:space="preserve">[^<]*/g).map((s) => s.slice(24)),
+      failCellText: text.includes('图片加载失败'),
+    };
+    document.getElementById('out').textContent = JSON.stringify(result, null, 1);
+    const btn = document.getElementById('save');
+    btn.hidden = false;
+    btn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([bytes]));
+      a.download = 'export-test.xlsx';
+      a.click();
+    };
+  }).catch((e) => (document.getElementById('out').textContent = '出错：' + e.stack));
+</script>

@@ -1,11 +1,12 @@
 const P = self.XhsParse;
 const $ = (id) => document.getElementById(id);
 
-let downloads = {};
+// 正在导出 Excel 的笔记的进度文字，以及上一次导出的结果，弹窗重新渲染时保留
+const exporting = new Map();
+const lastMessages = new Map();
 
 async function loadNotes() {
-  const [all, session] = await Promise.all([chrome.storage.local.get(null), chrome.storage.session.get(null)]);
-  downloads = session;
+  const all = await chrome.storage.local.get(null);
   return Object.keys(all)
     .filter((k) => k.startsWith('note:'))
     .map((k) => all[k])
@@ -22,13 +23,39 @@ function safeFileName(name) {
   return (name || '小红书评论').replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 60);
 }
 
-function download(notes, name) {
-  const blob = new Blob([P.toCSV(notes)], { type: 'text/csv;charset=utf-8' });
+function saveFile(data, type, name, ext) {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${safeFileName(name)}_${P.formatTime(Date.now()).replace(/[: ]/g, '-')}.csv`;
+  a.href = URL.createObjectURL(new Blob([data], { type }));
+  a.download = `${safeFileName(name)}_${P.formatTime(Date.now()).replace(/[: ]/g, '-')}.${ext}`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function download(notes, name) {
+  saveFile(P.toCSV(notes), 'text/csv;charset=utf-8', name, 'csv');
+}
+
+async function exportXlsx(note) {
+  const id = note.noteId;
+  const update = (text) => {
+    exporting.set(id, text);
+    render();
+  };
+  update('正在准备…');
+  let msg;
+  try {
+    const { bytes, total, failed } = await self.XhsExport.noteToXlsx(note, (done, all) => {
+      if (all) update(`正在加载图片 ${done}/${all}，请不要关闭弹窗…`);
+    });
+    saveFile(bytes, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', note.title, 'xlsx');
+    msg = failed ? `已导出，${failed}/${total} 张图片加载失败` : `已导出${total ? `，含 ${total} 张图片` : ''}`;
+  } catch (err) {
+    msg = '导出失败：' + (err && err.message ? err.message : err);
+    console.error(err);
+  }
+  exporting.delete(id);
+  lastMessages.set(id, msg);
+  render();
 }
 
 function noteCard(note, el) {
@@ -46,29 +73,25 @@ function noteCard(note, el) {
   const exportBtn = document.createElement('button');
   exportBtn.textContent = '导出 CSV';
   exportBtn.onclick = () => download([note], note.title);
-  const imgCount = P.imageTasks(note).length;
-  const dl = downloads['dl:' + note.noteId];
-  const imgBtn = document.createElement('button');
-  imgBtn.className = 'secondary';
-  if (dl && !dl.finished) {
-    imgBtn.textContent = `下载中 ${dl.done + dl.failed}/${dl.total}`;
-    imgBtn.disabled = true;
-  } else {
-    imgBtn.textContent = `下载图片（${imgCount}）`;
-    imgBtn.disabled = imgCount === 0;
-    imgBtn.onclick = () => chrome.runtime.sendMessage({ type: 'downloadImages', noteId: note.noteId });
-  }
-  if (dl && dl.finished) {
-    meta.textContent += ` · 图片已下载 ${dl.done} 张` + (dl.failed ? `，失败 ${dl.failed} 张` : '');
-  }
+  const imgCount = Object.values(note.comments || {}).reduce((n, r) => n + (r.images || []).length, 0);
+  const busy = exporting.get(note.noteId);
+  const xlsxBtn = document.createElement('button');
+  xlsxBtn.textContent = busy ? '导出中…' : imgCount ? `导出 Excel（含 ${imgCount} 张图）` : '导出 Excel';
+  xlsxBtn.disabled = !!busy;
+  xlsxBtn.onclick = () => exportXlsx(note);
+  exportBtn.className = 'secondary';
+  const status = document.createElement('div');
+  status.className = 'meta status';
+  status.textContent = busy || lastMessages.get(note.noteId) || '';
   const delBtn = document.createElement('button');
   delBtn.className = 'secondary danger';
   delBtn.textContent = '删除';
   delBtn.onclick = async () => {
     if (confirm(`删除“${note.title || note.noteId}”的记录？`)) await chrome.storage.local.remove('note:' + note.noteId);
   };
-  buttons.append(exportBtn, imgBtn, delBtn);
+  buttons.append(xlsxBtn, exportBtn, delBtn);
   el.append(title, meta, buttons);
+  if (status.textContent) el.append(status);
   return el;
 }
 

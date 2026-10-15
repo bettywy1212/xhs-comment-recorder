@@ -1,21 +1,44 @@
 {
   "manifest_version": 3,
   "name": "小红书评论记录器",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "你正常浏览小红书笔记时，被动记录页面已加载的评论和楼中楼回复，一键导出 CSV。不发出任何额外请求。",
-  "permissions": ["storage", "unlimitedStorage", "activeTab", "downloads"],
-  "background": { "service_worker": "background.js" },
-  "action": { "default_popup": "popup/popup.html", "default_title": "小红书评论记录器" },
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://*.xhscdn.com/*",
+    "http://*.xhscdn.com/*",
+    "https://*.xiaohongshu.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "小红书评论记录器"
+  },
   "content_scripts": [
     {
-      "matches": ["https://www.xiaohongshu.com/*"],
-      "js": ["inject.js"],
+      "matches": [
+        "https://www.xiaohongshu.com/*"
+      ],
+      "js": [
+        "inject.js"
+      ],
       "run_at": "document_start",
       "world": "MAIN"
     },
     {
-      "matches": ["https://www.xiaohongshu.com/*"],
-      "js": ["lib/parse.js", "bridge.js"],
+      "matches": [
+        "https://www.xiaohongshu.com/*"
+      ],
+      "js": [
+        "lib/parse.js",
+        "bridge.js"
+      ],
       "run_at": "document_start"
     }
   ]

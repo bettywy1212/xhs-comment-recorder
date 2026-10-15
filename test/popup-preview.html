@@ -14,11 +14,8 @@
     'note:6700000000000000000000aa': sample('柯桥真正的美食家现身吧！', '6700000000000000000000aa', 126, 12),
     'note:6700000000000000000000bb': sample('一篇没有图片评论的笔记', '6700000000000000000000bb', 20, 0),
   };
-  const session = { 'dl:6700000000000000000000bb': { total: 0, done: 0, failed: 0, finished: true } };
-  if (location.hash === '#downloading') session['dl:6700000000000000000000aa'] = { total: 12, done: 5, failed: 0, finished: false };
-  if (location.hash === '#done') session['dl:6700000000000000000000aa'] = { total: 12, done: 11, failed: 1, finished: true };
   window.chrome = {
-    storage: { local: { get: async () => local, remove: async () => {} }, session: { get: async () => session }, onChanged: { addListener() {} } },
+    storage: { local: { get: async () => local, remove: async () => {} }, onChanged: { addListener() {} } },
     tabs: { query: async () => [{ url: 'https://www.xiaohongshu.com/explore/6700000000000000000000aa' }] },
     runtime: { sendMessage: async (m) => console.log('sendMessage', m) },
   };
@@ -28,7 +25,7 @@
   fetch('../popup/popup.html').then((r) => r.text()).then((html) => {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     document.body.insertAdjacentHTML('afterbegin', doc.body.innerHTML.replace(/<script[\s\S]*?<\/script>/g, ''));
-    for (const src of ['../lib/parse.js', '../popup/popup.js']) {
+    for (const src of ['../lib/parse.js', '../lib/xlsx.js', '../lib/export-xlsx.js', '../popup/popup.js']) {
       const s = document.createElement('script'); s.src = src; s.async = false; document.body.append(s);
     }
   });
